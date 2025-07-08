@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Inici{% endblock %}
+
+{% block content %}
+<!-- MAPA AMB BANNER PLE -->
+
+<!-- CONTINGUT CENTRAT DINS CONTAINER -->
+<div class="section" style="z-index: 2; position: relative;padding-top: 0px !important;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-8">
+        <div class="card card-pricing" data-color="white">
+          <div class="card-body">
+
+            {% if estada_activa %}
+            <div class="alert alert-primary m-2 d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <div class="text-left" style="font-weight: 400;color: white !important;">
+                  <strong>Aparcament actiu!</strong><br>
+                  Matrícula: {{ estada_activa.matricula_cotxe }}<br>
+                  Zona: {{ estada_activa.zona.carrer }} ({{ estada_activa.zona.tipus }})<br>
+                  Fins: {{ estada_activa.data_final.strftime("%d/%m/%Y %H:%M") if estada_activa.data_final else "Encara
+                  actiu" }}<br>
+                  {% if estada_activa.data_final %}
+                    {% set ara = datetime.utcnow() %}
+                    {% set diff = estada_activa.data_final - ara %}
+                    {% set total_seconds = diff.total_seconds() %}
+                    {% if total_seconds > 0 %}
+                      {% set hores = (total_seconds // 3600) | int %}
+                      {% set minuts = ((total_seconds % 3600) // 60) | int %}
+                      {% set segons = (total_seconds % 60) | int %}
+                      ⏰ Et queden {{ hores }} hores, {{ minuts }} minuts i {{ segons }} segons!
+                    {% else %}
+                      ⏰ El temps ha expirat!
+                    {% endif %}
+                  {% endif %}
+                </div>
+              </div>
+              <form method="post" action="/finalitzar-estada" class="ml-3">
+                <input type="hidden" name="estada_id" value="{{ estada_activa.id }}">
+                <button type="submit" class="btn btn-sm btn-danger">Finalitzar</button>
+              </form>
+            </div>
+            {% endif %}
+
+            <div class="p-2">
+              {% if user %}
+              <a href="/welcome" class="col-12 btn btn-primary"
+                style="background-color: white;color: #51cbce;border: none;font-size: medium;">Benvingut, {{ user.nom or
+                user.email }}</a>
+              {% endif %}
+            </div>
+            {% if role == "policia" %}
+            <div class="p-2">
+              <a href="/zones" class="col-12 btn btn-neutral btn-round">Zones de Pagament</a>
+            </div>
+            <div class="p-2">
+              <a href="/robots" class="col-12 btn btn-neutral btn-round">Robots</a>
+            </div>
+            <div class="p-2">
+              <a href="/routing" class="col-12 btn btn-neutral btn-round">Planificar ruta</a>
+            </div>
+            <div class="p-2">
+              <a href="/deteccio" class="col-12 btn btn-neutral btn-round">Anàlisi d'imatges</a>
+            </div>
+            <div class="p-2">
+              <a href="/infraccions" class="col-12 btn btn-neutral btn-round">Infraccions</a>
+            </div>
+
+            {% else %}
+            <div class="p-2">
+              <a href="/parking" class="col-12 btn btn-neutral btn-round">Registrar Aparcament</a>
+            </div>
+            <div class="p-2">
+              <a href="/historial" class="col-12 btn btn-neutral btn-round">Historial</a>
+            </div>
+            <div class="p-2">
+              <a href="/cars" class="col-12 btn btn-neutral btn-round">Els Meus Cotxes</a>
+            </div>
+            <div class="p-2">
+              <a href="/infraccions" class="col-12 btn btn-neutral btn-round">Infraccions</a>
+            </div>
+            <div class="p-2">
+              <a href="/perfil" class="col-12 btn btn-neutral btn-round">Perfil</a>
+            </div>
+            {% endif %}
+            <div class="p-2">
+              <a href="/logout" class="col-12 btn btn-neutral btn-round">Sortir</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

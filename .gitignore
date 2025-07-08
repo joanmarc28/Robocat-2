@@ -1,0 +1,16 @@
+/web_parking/app/.env
+/env
+/web_parking/app/robocat-user-app-5d2b35bd5c22.json
+/logs
+/web_parking/app/client_secret.json
+/web_patrol/versiolocal
+/app/logs
+/app/runs
+/app/utils/secret.py
+__pycache__/
+*.pyc
+
+/web_parking/app/static/css\paper-kit.min.css
+/web_parking/app/static/llibreries/
+/web_parking/app/static/fonts/
+/web_parking/app/static/js/

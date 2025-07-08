@@ -1,0 +1,3 @@
+[submodule "app/external/pyslam"]
+	path = app/external/pyslam
+	url = https://github.com/luigifreda/pyslam.git

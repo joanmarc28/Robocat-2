@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Historial d'Estacionaments{% endblock %}
+
+{% block content %}
+<div class="section" style="z-index: 2; position: relative;padding-top: 0px !important;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card" data-color="white">
+                    <div class="card-body">
+                        <div class="col-12 btn-disabled titols">Historial</div>
+                    </div>
+                </div>
+                <div class="list-group">
+                    {% for estada in estades %}
+                    <div class="white mb-3 btn-round shadow-sm d-flex p-0">
+                        <!-- franja lateral amb el color de la zona -->
+                        <div class="color-bar {{ estada.zona|lower|replace(' ', '-') }}"></div>
+
+                        <!-- contingut principal -->
+                        <div class="p-3 w-100">
+                            <div class="d-flex align-items-center mb-2">
+                                <img src="{{ estada.image_car if estada.image_car else '/static/img/logo.png' }}"
+                                    alt="Cotxe" class="mr-3 rounded"
+                                    style="width: 100px; height: 60px; object-fit: cover;">
+                                <div>
+                                    <h5 class="mb-1 font-weight-bold">{{ estada.matricula }}</h5>
+                                    <small class="text-muted">
+                                        {{ estada.data_inici.strftime("%d/%m/%Y %H:%M") }} →
+                                        {{ estada.data_final.strftime("%d/%m/%Y %H:%M") if estada.data_final else
+                                        "Encara actiu" }}
+                                    </small>
+
+                                </div>
+                            </div>
+                            <p class="mb-1">Zona: {{ estada.zona }} - {{ estada.carrer }}, {{ estada.ciutat }}
+                            </p>
+                            <p class="mb-1">Preu total: {{ "%.2f"|format(estada.preu) }} €</p>
+                            <span class="badge {{ 'badge-success' if estada.activa else 'badge-secondary' }}">
+                                {{ 'Actiu' if estada.activa else 'Finalitzat' }}
+                            </span>
+
+                            {% if estada.activa %}
+                            <form method="post" action="/finalitzar-estada" class="mt-2">
+                                <input type="hidden" name="estada_id" value="{{ estada.id }}">
+                                <button type="submit" class="btn btn-sm btn-danger">Finalitzar Estada</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-center">No tens cap estacionament registrat.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .color-bar {
+        width: 30px;
+        border-top-left-radius: 30px;
+        border-bottom-left-radius: 30px;
+    }
+
+    .color-bar.blava {
+        background-color: #009cff;
+    }
+
+    .color-bar.verda {
+        background-color: #00FF00;
+    }
+
+    .color-bar.taronja {
+        background-color: #FFA500;
+    }
+
+    .color-bar.vermella {
+        background-color: #FF0000;
+    }
+</style>
+
+{% endblock %}

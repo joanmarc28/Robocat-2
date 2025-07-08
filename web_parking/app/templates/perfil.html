@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Perfil Client{% endblock %}
+
+{% block content %}
+<div class="section" style="padding-top: 0px;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card" data-color="white">
+                    <div class="card-body">
+                        <div class="col-12 btn-disabled titols">Perfil</div>
+
+                        <form method="POST" action="/perfil/update" class="mt-4">
+                            <!-- Info Usuari -->
+                            <h5>Dades d'Usuari</h5>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" name="email" class="form-control input-class" value="{{ user.email }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Data de Naixement</label>
+                                <input type="date" name="data_naixement" class="form-control input-class" value="{{ user.data_naixement }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Ciutat</label>
+                                <input type="text" name="ciutat" class="form-control input-class" value="{{ user.ciutat }}">
+                            </div>
+                            <div class="form-group">
+                                <label>País</label>
+                                <input type="text" name="pais" class="form-control input-class" value="{{ user.pais }}">
+                            </div>
+
+                            <!-- Info Client -->
+                            <h5 class="mt-4">Dades de Client</h5>
+                            <div class="form-group">
+                                <label>DNI</label>
+                                <input type="text" name="dni" class="form-control input-class" value="{{ client.dni }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Nom</label>
+                                <input type="text" name="nom" class="form-control input-class" value="{{ client.nom }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Cognoms</label>
+                                <input type="text" name="cognoms" class="form-control input-class" value="{{ client.cognoms }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Direcció</label>
+                                <input type="text" name="direccio" class="form-control input-class" value="{{ client.direccio }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Codi Postal</label>
+                                <input type="text" name="codi_postal" class="form-control input-class" value="{{ client.codi_postal }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Telèfon</label>
+                                <input type="text" name="telefon" class="form-control input-class" value="{{ client.telefon }}">
+                            </div>
+
+                            <div class="mt-4 text-center">
+                                <button type="submit" class="btn btn-neutral btn-round">Guardar Canvis</button>
+                            </div>
+
+                            <div class="mt-2 text-center">
+                                <a href="/logout" class="btn btn-danger btn-round">Tancar Sessió</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

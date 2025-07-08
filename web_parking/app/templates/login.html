@@ -1,0 +1,38 @@
+
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+
+<!--<div class="wrapper">-->
+<div class="section" style="z-index: 2; position: relative;padding-top: 0px !important;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card" data-color="white">
+                    <div class="card-body">
+                        <form id="login-form" method="POST" action="/login">
+                            <div class="form-group">
+                                <div class="col-12 btn-disabled titols">Entrar al Sistema</div>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control input-class" id="email" name="email" placeholder="Introdueix Nom d'usuari" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" class="form-control input-class" id="password" name="password" placeholder="Introdueix la Contrasenya" required>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-neutral btn-round btn-block">Enviar</button>
+                            </div>
+                            <div class="form-group text-center">
+                                <a href="/recuperar_contrasenya" class="btn btn-link">He oblidat la contrasenya</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

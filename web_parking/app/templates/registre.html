@@ -1,0 +1,116 @@
+
+{% extends "base.html" %}
+{% block title %}Registre{% endblock %}
+
+{% block content %}
+<div class="section" style="z-index: 2; position: relative;padding-top: 0px !important;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card" data-color="white">
+                    <div class="card-body">
+                        <form id="registre-form" method="POST" action="/registre">
+                            <div class="form-group">
+                                <div class="col-12 btn-disabled titols">Registre</div>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control input-class" id="email" name="email" placeholder="Introdueix el Correu" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="data_naixement" class="font-weight-bold d-block" style="color:#66615b;">Introdueix la data de Naixament</label>
+                                <input type="date" class="form-control input-class" id="data_naixement" name="data_naixement" placeholder="Introdueix la data de Naixament" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control input-class" id="ciutat" name="ciutat" placeholder="Introdueix la Ciutat" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control input-class" id="pais" name="pais" placeholder="Introdueix el Païs" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="font-weight-bold d-block" style="color:#66615b;">Ets Policia?</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input custom-radio" type="radio" name="es_policia" id="policia-si" value="true">
+                                    <label class="form-check-label" for="policia-si">Sí</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input custom-radio" type="radio" name="es_policia" id="policia-no" value="false" checked>
+                                    <label class="form-check-label" for="policia-no">No</label>
+                                </div>
+                            </div>
+
+                            <div id="client-fields">
+                                <label class="font-weight-bold d-block" style="color:#66615b;">Hola Client !!</label>
+                                <div class="form-group">
+                                    <input type="text" class="form-control input-class" id="dni" name="dni" placeholder="Introdueix el DNI">
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control input-class" id="nom" name="nom" placeholder="Introdueix el Nom">
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control input-class" id="cognoms" name="cognoms" placeholder="Introdueix el Cognom">
+                                </div>
+                                <div class="form-group">
+                                    <input type="number" class="form-control input-class" id="telefon" name="telefon" placeholder="Introdueix el Telefon">
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" class="form-control input-class" id="direccio " name="direccio " placeholder="Introdueix la Direcció">
+                                </div>
+                                <div class="form-group">
+                                    <input type="number" class="form-control input-class" id="codi_postal" name="codi_postal" placeholder="Introdueix el Codi Postal">
+                                </div>
+                            </div>
+
+                            <div id="police-fields" style="display: none;">
+                                <label class="font-weight-bold d-block" style="color:#66615b;">Hola Policia !!</label>
+                                <div class="form-group">
+                                    <input type="text" class="form-control input-class" id="placa" name="placa" placeholder="Introdueix Numero de Placa">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="password" class="form-control input-class mb-2" id="password" name="password" placeholder="Introdueix la Contrasenya" required>
+                                <input type="password" class="form-control input-class" id="password2" name="password2" placeholder="Repeteix la Contrasenya" required>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-neutral btn-round btn-block">Enviar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block scripts %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const radioSi = document.getElementById("policia-si");
+    const radioNo = document.getElementById("policia-no");
+    const clientFields = document.getElementById("client-fields");
+    const policeFields = document.getElementById("police-fields");
+
+    function toggleFields() {
+        if (radioSi.checked) {
+            policeFields.style.display = "block";
+            clientFields.style.display = "none";
+        } else {
+            policeFields.style.display = "none";
+            clientFields.style.display = "block";
+        }
+    }
+
+    // inicialitza l'estat al carregar
+    toggleFields();
+
+    // afegir listeners als radios
+    radioSi.addEventListener("change", toggleFields);
+    radioNo.addEventListener("change", toggleFields);
+});
+</script>
+
+{% endblock %}

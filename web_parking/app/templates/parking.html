@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+{% block title %}Registrar Aparcament{% endblock %}
+
+{% block content %}
+
+<!--<div class="wrapper">-->
+<div class="section" style="z-index: 2; position: relative;padding-top: 0px !important;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card" data-color="white">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="col-12 btn-disabled titols">Registrar nou Aparcament</div>
+                        </div>
+                        <div id="part-1">
+                            <div id="map" class="rounded"
+                                style="height: 500px; width: 100%;  border: 2px #94b9ff solid; "></div>
+                            <div class="pl-3 pr-3">
+                                <div class="mt-3 form-group container row">
+                                    <div id="color_zona" class="col-2"
+                                        style="  border: 2px solid #94b9ff; background-color: #94b9ff; border-radius: 10px;">
+                                    </div>
+                                    <p class="font-weight-bold col-10" style="color:#66615b;">Zona <span
+                                            id="id_zona">---</span> </p>
+                                </div>
+                                <div class="pl-3 mt-3 form-group">
+                                    <p class="font-weight-bold" style="color:#66615b;">Carrer: <span
+                                            id="carrer_zona">-------------</span></p>
+                                    <p class="font-weight-bold" style="color:#66615b;">Temps Maxim estada: <span
+                                            id="temps_zona">-------------</span></p>
+                                    <p class="font-weight-bold" style="color:#66615b;">Preu: <span
+                                            id="preu-zona">--,--</span> € / hora </p>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <a id="seguent_part" href="" class="col-12 btn btn-neutral btn-round">Iniciar
+                                    Aparcament</a>
+                            </div>
+
+
+                        </div>
+                        <div id="part-2" style="display: none;">
+                            <form>
+                                <div class="form-group text-center">
+                                    <video id="video" autoplay playsinline class="rounded"
+                                        style="width: 100%; max-height: 600px; border: 2px #94b9ff solid;"></video>
+                                    <canvas id="canvas" style="display:none;"></canvas>
+                                    <img id="photo" class="mt-3" src="" alt="Foto capturada"
+                                        style="display:none; width: 100%; border-radius: 12px;" />
+                                </div>
+                                <button type="button" class="btn col-12 btn-neutral btn-round"
+                                    onclick="startCamera()">Activar Càmera</button>
+                                <div class="mt-2 form-group text-center">
+                                    <button type="button" class="btn btn-warning btn-sm"
+                                        onclick="takePhoto()">Capturar</button>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="deletePhoto()">Eliminar
+                                        Captura</button>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-10 pr-2">
+                                        <input type="text" class="form-control input-class" id="plate" name="plate"
+                                            placeholder="Matricula" required>
+                                    </div>
+                                    <div class="col-2 pl-2">
+                                        <button type="button" class="btn btn-neutral btn-round"
+                                            onclick="searchCar()">Buscar</button>
+                                    </div>
+                                </div>
+                                <div id="registrar_cotxe" style="display: none;">
+                                    <div id="registrar-cotxe" class="mt-2">
+                                        <label class="font-weight-bold d-block" style="color:#66615b;">Registrar
+                                            Cotxe</label>
+                                        <div class="form-group">
+                                            <input type="text" class="form-control input-class" id="marca" name="marca"
+                                                placeholder="Introdueix la Marca" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="text" class="form-control input-class" id="model" name="model"
+                                                placeholder="Introdueix el Model" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="color" class="font-weight-bold d-block"
+                                                style="color:#66615b;">Selecciona Color:</label>
+                                            <select name="color" class="form-control select-class" required
+                                                style="border-radius: 30px; border: 3px solid #94b9ff;" id="color">
+                                                <option value="blue">Blau</option>
+                                                <option value="orange">Taronja</option>
+                                                <option value="green">Verd</option>
+                                                <option value="black">Negre</option>
+                                                <option value="white">Blanc</option>
+                                                <option value="yellow">Groc</option>
+                                                <option value="red">Vermell</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="number" class="form-control input-class" id="any_matriculacio"
+                                                name="any_matriculacio" min="1980" max="{{ any_actual }}"
+                                                placeholder="Introdueix l’Any de Matriculació" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="combustible" class="font-weight-bold d-block"
+                                                style="color:#66615b;">Dades DGT:</label>
+                                            <select name="dgt" class="form-control select-class" required
+                                                style="border-radius: 30px; border: 3px solid #94b9ff;" id="dgt">
+                                                <option value="c">C</option>
+                                                <option value="b">B</option>
+                                                <option value="zero">0 emisions</option>
+                                                <option value="eco">ECO</option>
+                                                <option value="ninguna">Cap</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="combustible" class="font-weight-bold d-block"
+                                                style="color:#66615b;">Tipus de Combustible:</label>
+                                            <select name="combustible" class="form-control select-class" required
+                                                style="border-radius: 30px; border: 3px solid #94b9ff;"
+                                                id="combustible">
+                                                <option value="diesel">Diesel</option>
+                                                <option value="gasolina">Gasolina</option>
+                                                <option value="gas">Gas</option>
+                                                <option value="electricity">Electric</option>
+                                                <option value="hidrogeno">Hidrogen</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-neutral btn-round"
+                                            onclick="newCar()">Registrar Cotxe</button>
+                                    </div>
+                                </div>
+                                <div id="mostrar_final" class="mt-2" style="display: none;">
+                                    <div class="form-group container row">
+                                        <input type="number" class="col-8 form-control input-class" id="minuts"
+                                            name="minuts" min="0" max="3060" placeholder="0" required>
+                                        <label class="font-weight-bold m-auto col-4" style="color:#66615b;">
+                                            Minuts</label>
+                                    </div>
+                                    
+                                        
+                                    <div class="form-group">
+                                        <label for="data_final" class="font-weight-bold d-block"
+                                            style="color:#66615b;">Fins: </label>
+                                        <input type="date" class="form-control input-class" id="data_final"
+                                            name="data_final" disabled style="background-color: #f8f9fa;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="font-weight-bold d-block" style="color:#66615b;">Total a Pagar:
+                                            <span id="date">0</span> €</label>
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-neutral btn-round btn-block" onclick="iniciarAparcament()">Iniciar Aparcament</button>
+
+                                    </div>
+                                </div>
+                            </form>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    let map;
+    let userCircle;
+    let selectedZone = null;
+
+    function initMap() {
+        const fallback = { lat: 41.387, lng: 2.170 };
+
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: fallback,
+            zoom: 17,
+            mapTypeControl: false,
+            fullscreenControl: false,
+        });
+
+        //carrega zones backend
+        fetch("/obtenir-zones")
+            .then(response => response.json())
+            .then(zones => {
+                zones.forEach(zona => {
+                    const polygonCoords = zona.coordenades.map(coord => ({ lat: coord.lat, lng: coord.lng }));
+                    const color = zona.tipus === "blava" ? "#009cff" :
+                        zona.tipus === "verda" ? "#00FF00" :
+                            zona.tipus === "taronja" ? "#FFA500" : "#FF0000";
+
+                    const polygon = new google.maps.Polygon({
+                        paths: polygonCoords,
+                        strokeColor: color,
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: color,
+                        fillOpacity: 0.35
+                    });
+
+                    polygon.setMap(map);
+
+                    //const infoWindow = new google.maps.InfoWindow();
+                    polygon.addListener('click', (event) => {
+                        selectedZone = zona.id;
+                        document.getElementById('color_zona').style.backgroundColor = color;
+                        document.getElementById('color_zona').style.borderColor = color;
+                        document.getElementById('id_zona').innerText = zona.id;
+                        document.getElementById('carrer_zona').innerText = zona.carrer;
+                        document.getElementById('temps_zona').innerText = `${zona.temps_maxim} min`;
+                        document.getElementById('preu-zona').innerText = zona.preu_min.toFixed(2).replace('.', ',');
+                    });
+                });
+            })
+            .catch(error => {
+                console.error("Error carregant zones:", error);
+            });
+
+        //mostra ubicacio user
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                (position) => {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+
+                    if (userCircle) {
+                        userCircle.setCenter(pos);
+                    } else {
+                        userCircle = new google.maps.Circle({
+                            strokeColor: "#1E90FF",
+                            strokeOpacity: 0.8,
+                            strokeWeight: 2,
+                            fillColor: "#1E90FF",
+                            fillOpacity: 0.35,
+                            map: map,
+                            center: pos,
+                            radius: 8,
+                        });
+                    }
+
+                    map.setCenter(pos);
+                },
+                (error) => {
+                    console.warn("Error obtenint ubicació:", error.message);
+                    alert("No s’ha pogut obtenir la teva ubicació.");
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            alert("El teu navegador no suporta geolocalització.");
+        }
+    }
+
+
+    document.getElementById('seguent_part').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (selectedZone === null) {
+            alert("Si us plau, selecciona una zona al mapa abans de continuar.");
+            return;
+        }
+        const part1 = document.getElementById('part-1');
+        const part2 = document.getElementById('part-2');
+
+        if (map) {
+            part1.style.display = 'none';
+            part2.style.display = 'block';
+            //startCamera();
+        } else {
+            alert("El mapa no s'ha carregat correctament. Si us plau, torna a intentar-ho.");
+        }
+    });
+
+
+    document.getElementById('minuts').addEventListener('input', function () {
+        const minuts = parseInt(this.value) || 0;
+
+        const preuPerHoraText = document.getElementById('preu-zona').innerText;
+        const preuPerHora = parseFloat(preuPerHoraText.replace(',', '.')) || 0;
+        const preuPerMinut = preuPerHora / 60;
+
+        const preuTotal = (minuts * preuPerMinut).toFixed(2);
+
+        document.getElementById('date').innerText = `${preuTotal}`;
+
+        // calcula hora final
+        const ara = new Date();
+        ara.setMinutes(ara.getMinutes() + minuts);
+        const horaFiStr = ara.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // mostra nova hora
+        document.querySelector('label[for="data_final"]').innerText = `Fins (hora): ${horaFiStr}`;
+
+        const yyyy = ara.getFullYear();
+        const mm = String(ara.getMonth() + 1).padStart(2, '0');
+        const dd = String(ara.getDate()).padStart(2, '0');
+        document.getElementById('data_final').value = `${yyyy}-${mm}-${dd}`;
+    });
+
+
+
+    let stream; //per guardar el MediaStream globalment
+
+    function startCamera() {
+        const video = document.getElementById('video');
+        navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { exact: "environment" } }
+        })
+            .then(mediaStream => {
+                stream = mediaStream;
+                video.srcObject = mediaStream;
+            })
+            .catch(error => {
+                console.error("No s’ha pogut accedir a la càmera del darrere:", error);
+                //si falla, fer servir camera default
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(mediaStream => {
+                        stream = mediaStream;
+                        video.srcObject = mediaStream;
+                    });
+            });
+    }
+
+    function deletePhoto() {
+        const photo = document.getElementById('photo');
+        const video = document.getElementById('video');
+        const hiddenInput = document.getElementById('imageInput');
+
+        //esborra foro i tornar a mostrar video
+        photo.src = '';
+        photo.style.display = 'none';
+        video.style.display = 'block';
+
+        //eliminem el valor del camp hidden (si existeix)
+        if (hiddenInput) {
+            hiddenInput.value = '';
+        }
+
+        // reengeguem la camera si s’ha apagat abans
+        if (!video.srcObject) {
+            startCamera();
+        }
+    }
+    async function takePhoto() {
+        const video = document.getElementById("video");
+        const canvas = document.createElement("canvas");
+        const photo = document.getElementById('photo');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = canvas.toDataURL("image/png");
+
+        // mostra la imatge de seguida
+        photo.src = imageData;
+        photo.style.display = 'block';
+        video.style.display = 'none';
+
+        // atura la càmera immediatament
+        if (stream) stream.getTracks().forEach(track => track.stop());
+
+        // envia la imatge al backend
+        const formData = new FormData();
+        formData.append("capturedImage", imageData);
+
+        try {
+            const response = await fetch("/extract-plate", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+            if (result.plate) {
+                document.getElementById("plate").value = result.plate;
+            } else {
+                alert("No s'ha pogut detectar cap matrícula.");
+            }
+        } catch (error) {
+            console.error("Error en enviar la imatge:", error);
+        }
+    }
+
+    let matricula = null;
+
+    async function searchCar() {
+        const plate = document.getElementById("plate").value;
+        const userId = "{{ client.dni }}";
+
+        try {
+            const response = await fetch(`/obtenir-cotxe?matricula=${encodeURIComponent(plate)}&dni=${encodeURIComponent(userId)}`, {
+                method: "GET"
+            });
+
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    //alert("No s'ha trobat cap cotxe amb aquesta matrícula per aquest usuari.");
+                    document.getElementById("registrar_cotxe").style.display = 'block';
+                } else {
+                    alert("Error inesperat: " + response.status);
+                }
+                return; //atura aqui
+            }
+
+            const result = await response.json();
+            matricula = result.matricula;
+            document.getElementById("mostrar_final").style.display = 'block';
+
+            //alert("Cotxe trobat!");
+        } catch (error) {
+            console.error("Error en enviar la consulta:", error);
+            alert("Hi ha hagut un error en la consulta.");
+        }
+    }
+
+    async function newCar() {
+        const userId = "{{ client.dni }}";  //passat des del backend amb Jinja o FastAPI
+        const matricula = document.getElementById("plate").value.trim();
+        const marca = document.getElementById("marca").value.trim();
+        const model = document.getElementById("model").value.trim();
+        const color = document.getElementById("color").value;
+        const any_matriculacio = document.getElementById("any_matriculacio").value;
+        const dgt = document.getElementById("dgt").value;
+        const combustible = document.getElementById("combustible").value;
+
+        //validacio
+        if (!matricula || !marca || !model || !color || !any_matriculacio || !dgt || !combustible) {
+            alert("Si us plau, omple tots els camps abans d'enviar.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("matricula", matricula);
+        formData.append("marca", marca);
+        formData.append("model", model);
+        formData.append("color", color);
+        formData.append("any_matriculacio", any_matriculacio);
+        formData.append("dgt", dgt);
+        formData.append("combustible", combustible);
+        formData.append("imatge", "");
+        formData.append("dni_usuari", userId);
+
+        try {
+            const response = await fetch("/guardar-cotxe", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: No s'ha pogut crear el cotxe`);
+            }
+
+            const result = await response.json();
+            //alert("Cotxe registrat amb èxit!");
+
+            document.getElementById("registrar_cotxe").style.display = 'none';
+            document.getElementById("registrar_cotxe").innerHTML = '';
+            document.getElementById("mostrar_final").style.display = 'block';
+
+        } catch (error) {
+            console.error("Error creant cotxe:", error);
+            alert("Hi ha hagut un error al registrar el cotxe.");
+        }
+    }
+async function iniciarAparcament() {
+    const userId = "{{ client.dni }}";
+    const matricula = document.getElementById("plate").value.trim();
+    const idZona = selectedZone;
+    const minuts = parseInt(document.getElementById("minuts").value);
+    const preuTotal = parseFloat(document.getElementById("date").innerText.replace(',', '.'));
+    const dataInici = new Date().toISOString();
+    /*    const dataFinalInput = document.getElementById("data_final").value;
+    const dataFinal = dataFinalInput ? new Date(dataFinalInput).toISOString() : null;*/
+    const ara = new Date();
+    ara.setMinutes(ara.getMinutes() + minuts);
+    const dataFinal = ara.toISOString();
+    
+    if (!matricula || !idZona || !minuts || !preuTotal) {
+        alert("Si us plau, omple tots els camps per registrar l’aparcament.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("dni_usuari", userId);
+    formData.append("matricula_cotxe", matricula);
+    formData.append("id_zona", idZona);
+    formData.append("data_inici", dataInici);
+    formData.append("data_final", dataFinal);
+    formData.append("preu", preuTotal);
+    formData.append("activa", true);
+
+    try {
+        const response = await fetch("/guardar-estada", {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: No s'ha pogut iniciar l’aparcament`);
+        }
+
+        const result = await response.json();
+        //alert("Aparcament registrat amb èxit!");
+        //console.log("Estada creada:", result);
+
+        // Aquí pots redirigir o actualitzar l’UI
+        //document.getElementById("mostrar_final").style.display = 'none';
+        window.location.href = "/welcome";
+
+    } catch (error) {
+        console.error("Error registrant l’aparcament:", error);
+        alert("Hi ha hagut un error al registrar l’aparcament.");
+    }
+}
+
+
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initMap"></script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}LListat infractors{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="container">
+        {% if request.query_params.get("success") == "1" %}
+        <div class="alert alert-success text-center" role="alert">
+            ✅ Infracció registrada correctament!
+        </div>
+        {% endif %}
+
+        <div class="row justify-content-center">
+            {% if role == "policia" %}
+            <!-- POSSIBLES INFRACCIONS -->
+            <div class="col-12 col-md-10 col-lg-10">
+                <div class="card" data-color="white">
+                    <div class="card-body">
+                        <h3 class="text-center">Llista de possibles infraccions</h3>
+                        {% if possibles_infractors %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Imatge</th>
+                                        <th>Matrícula</th>
+                                        <th>Infracció</th>
+                                        <th>Timestamp</th>
+                                        <th>Acció</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in possibles_infractors %}
+                                    <tr>
+                                        <td>
+                                            {% if i.imatge %}
+                                            <img src="{{ i.imatge }}" alt="Foto infracció" style="max-width: 120px; max-height: 80px;">
+                                            {% else %}
+                                            <span class="text-muted">Cap imatge</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ i.matricula }}</td>
+                                        <td>{{ i.infraccio }}</td>
+                                        <td>{{ i.timestamp.strftime("%d/%m/%Y %H:%M") }}</td>
+                                        <td>
+                                            <form method="POST" style="margin:0;" class="mb-2">
+                                                <input type="hidden" name="accio" value="eliminar">
+                                                <input type="hidden" name="matricula" value="{{ i.matricula }}">
+                                                <input type="hidden" name="timestamp" value="{{ i.timestamp }}">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar">🗑️</button>
+                                            </form>
+                                            <a href="/nova_infraccio?matricula={{ i.matricula }}&timestamp={{ i.timestamp }}" class="btn btn-outline-success btn-sm" title="Confirmar">✅</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-center text-muted mt-4">Encara no hi han possibles infraccions</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- INFRACTORS (TOTS O PERSONALS) -->
+            <div class="col-12 col-md-10 col-lg-10">
+                <div class="card" data-color="white">
+                    <div class="card-body">
+                        <h3 class="text-center">Llista d'infractors</h3>
+                        {% if infractors %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Imatge</th>
+                                        <th>Nom</th>
+                                        <th>DNI</th>
+                                        <th>Matrícula</th>
+                                        <th>Data</th>
+                                        <th>Import</th>
+                                        <th>Infracció</th>
+                                        <th>Acció</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in infractors %}
+                                    <tr>
+                                        <td>
+                                            {% if i.imatge %}
+                                            <img src="{{ i.imatge }}" alt="Foto infracció" style="max-width: 120px; max-height: 80px;">
+                                            {% else %}
+                                            <span class="text-muted">Cap imatge</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ i.nom }}</td>
+                                        <td>{{ i.dni }}</td>
+                                        <td>{{ i.matricula }}</td>
+                                        <td>{{ i.data }}</td>
+                                        <td>{{ i.import }} €</td>
+                                        <td>{{ i.infraccio }}</td>
+                                        <td>
+                                            {% if role == "policia" %}
+                                            <form method="POST" style="margin:0;">
+                                                <input type="hidden" name="accio" value="eliminar">
+                                                <input type="hidden" name="dni" value="{{ i.dni }}">
+                                                <input type="hidden" name="data" value="{{ i.data }}">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar">🗑️</button>
+                                            </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-center text-muted mt-4">Encara no hi han infractors</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

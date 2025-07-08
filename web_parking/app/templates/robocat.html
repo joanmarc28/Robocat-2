@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+{% block title %}Robocat - {{ robot_id }}{% endblock %}
+
+{% block content %}
+<style>
+  .radar-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 30px auto 10px auto;
+    /*box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);*/
+  }
+
+  .wave {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 3px solid #00ffcc;
+    border-radius: 50%;
+    animation: sonarWave 2s linear infinite;
+    opacity: 0.5;
+    transition: border-color 0.3s ease, animation-duration 0.3s ease;
+  }
+
+  .wave.delay1 {
+    animation-delay: 0.5s;
+  }
+
+  .wave.delay2 {
+    animation-delay: 1s;
+  }
+
+  .center-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    background-color: #00ffcc;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    transition: background-color 0.3s ease;
+  }
+
+  .center-dot.pulse {
+    animation: pulse 0.6s infinite;
+  }
+
+  .dist-label {
+    position: absolute;
+    top: 80%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 8px 14px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+    transition: all 0.3s ease;
+    z-index: 20;
+  }
+
+  .dist-label.alert {
+    color: #fff !important;
+    background-color: rgba(255, 0, 0, 0.5);
+    box-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
+  }
+
+
+  @keyframes sonarWave {
+    0% {
+      transform: scale(0.1);
+      opacity: 0.8;
+    }
+
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+
+  @keyframes pulse {
+
+    0%,
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+      transform: translate(-50%, -50%) scale(1.3);
+    }
+  }
+
+  @keyframes shake {
+
+    0%,
+    100% {
+      transform: translate(-50%, -50%) translateX(0);
+    }
+
+    25% {
+      transform: translate(-50%, -50%) translateX(3px);
+    }
+
+    50% {
+      transform: translate(-50%, -50%) translateX(-3px);
+    }
+
+    75% {
+      transform: translate(-50%, -50%) translateX(3px);
+    }
+  }
+</style>
+
+<div class="section">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12">
+        <div class="card" data-color="white">
+          <div class="card-body">
+            <div class="form-group">
+              <div class="col-12 btn-disabled titols">Robot: {{ robot_id }}</div>
+            </div>
+            <div class="row">
+              <div class="col-2">
+                <div class="row">
+                  <div class="col-12">
+                    <!-- Radar -->
+                    <h4>📡 Sensor de Distància</h4>
+                    <div class="radar-container">
+                      <div class="wave"></div>
+                      <div class="wave delay1"></div>
+                      <div class="wave delay2"></div>
+                      <div class="center-dot"></div>
+                      <div class="dist-label" id="distancia">Distància: -- cm</div>
+                    </div>
+                  </div>
+                  
+                  <div class="col-12">
+                    <!-- Telemetria JSON -->
+                    <h4>📊 Telemetria</h4>
+                    <pre id="telemetria" class="bg-light p-2 rounded" style="min-height: 150px;">Esperant dades...</pre>
+                  </div>
+                </div>
+              </div>
+              <div class="col-10">
+                <div class="row">
+                  <div class="col-12">
+                    <h4>⚠️ Estat del Sistema</h4>
+                    <ul id="errors" class="list-group mb-3">
+                      <li class="list-group-item">Esperant dades...</li>
+                    </ul>
+                  </div>
+
+                  <div class="col-12 col-md-10 col-lg-6">
+                    <h4 class="mb-3">📺 Vídeo en directe</h4>
+                    <img id="video" src="/stream/{{ robot_id }}" class="img-fluid rounded border" />
+                  </div>
+
+                  <div class="col-12 col-md-10 col-lg-6">
+                    <h4 class="mb-3">🗺️ Ubicació Robocat</h4>
+                    <div id="mapa" class="shadow" style="
+              height: 400px;
+              width: 100%;
+              border: none;
+              border-radius: 30px;
+              overflow: hidden;
+              position: relative;
+              z-index: 1;
+            ">
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-10 col-lg-6">
+                    <!-- Gràfic telemetria -->
+                    <h4>📈 Us de CPU i RAM</h4>
+                    <canvas id="grafica-sistema" height="100"></canvas>
+                  </div>
+                  <div class="col-12 col-md-10 col-lg-6">
+                    <h4>🌡️ Històric de Temperatures</h4>
+                    <canvas id="grafica-temps" height="100"></canvas>
+                  </div>
+
+                  <div class="col-12">
+                    <!-- Controls -->
+                    <h4>🎮 Controls</h4>
+                    <div class="d-grid gap-2 d-md-block mb-3">
+                      <button onclick="enviar('endavant')" class="btn btn-success m-1">Endavant</button>
+                      <button onclick="enviar('enrere')" class="btn btn-warning m-1">Enrere</button>
+                      <button onclick="enviar('rotar')" class="btn btn-info m-1">Rotar</button>
+                      <button onclick="enviar('demo')" class="btn btn-danger m-1">Demostració</button>
+                      <!--<button onclick="enviar('enrere')" class="btn btn-secondary m-1">Enrere</button>
+                      <button onclick="enviar('esquerra')" class="btn btn-info m-1">Esquerra</button>
+                      <button onclick="enviar('dreta')" class="btn btn-info m-1">Dreta</button>
+                      <button onclick="enviar('atura')" class="btn btn-danger m-1">Atura</button>-->
+                    </div>
+                    <div class="d-grid gap-2 d-md-block">
+                      <button onclick="enviar('human')" class="btn btn-success m-1">Mode interacció Humana</button>
+                      <button onclick="enviar('police')" class="btn btn-info m-1">Mode Policial</button>
+                    </div>
+                    <div class="d-grid gap-2 d-md-block">
+                      <button onclick="enviar('ajupir')" class="btn btn-success m-1">Ajupir</button>
+                      <button onclick="enviar('normal')" class="btn btn-warning m-1">Normal</button>
+                      <button onclick="enviar('up')" class="btn btn-info m-1">De Peu</button>
+                      <button onclick="enviar('strech')" class="btn btn-danger m-1">Estirat</button>
+                      <button onclick="enviar('hind_sit')" class="btn btn-success m-1">Sentat</button>
+                      <button onclick="enviar('maneta')" class="btn btn-success m-1">Maneta</button>
+                      <button onclick="enviar('recte')" class="btn btn-success m-1">Recte</button>
+                      <button onclick="enviar('calibrar')" class="btn btn-success m-1">Calibrar</button>
+                    </div>
+                    <div class="d-grid gap-2 d-md-block">
+                      <button onclick="enviar('happy')" class="btn btn-success m-1">Content</button>
+                      <button onclick="enviar('sad')" class="btn btn-warning m-1">Trist</button>
+                      <button onclick="enviar('angry')" class="btn btn-info m-1">Angry</button>
+                      <button onclick="enviar('patrol')" class="btn btn-danger m-1">Patrullant</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const robot_id = "{{ robot_id }}";
+  const telemetria = document.getElementById("telemetria");
+  const label = document.getElementById("distancia");
+  const centerDot = document.querySelector(".center-dot");
+  const waves = document.querySelectorAll(".wave");
+  const errorList = document.getElementById("errors");
+
+  let mapa;
+  let marcador;
+  let primerCop = true;
+  let haRebutPosicioRobocat = false;
+
+  function initMap() {
+    const coordenadesInicials = { lat: 41.5381, lng: 2.4447 }; // Ex: Mataró
+
+    mapa = new google.maps.Map(document.getElementById("mapa"), {
+      center: coordenadesInicials,
+      zoom: 17,
+      mapTypeId: "satellite"
+    });
+
+    marcador = new google.maps.Marker({
+      position: coordenadesInicials,
+      map: mapa,
+      title: "Robocat",
+      icon: {
+        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+        scale: 5,
+        fillColor: "#00ffcc",
+        fillOpacity: 0.9,
+        strokeWeight: 2,
+        rotation: 0
+      }
+    });
+
+    // Espera 3 segons per veure si rebem la ubicació del Robocat
+    setTimeout(() => {
+      if (!haRebutPosicioRobocat) {
+        obtenirCoordenadesClient().then(pos => {
+          marcador.setPosition(pos);
+          mapa.setCenter(pos);
+        }).catch(console.warn);
+      }
+    }, 3000);
+  }
+
+  function obtenirCoordenadesClient() {
+    return new Promise((resolve, reject) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          err => reject("No s'han pogut obtenir coordenades client: " + err.message)
+        );
+      } else {
+        reject("Geolocalització no suportada");
+      }
+    });
+  }
+
+  function setMarker(lat, lon, heading) {
+    let posActual = marcador.getPosition();
+
+    if (lat && lon) {
+      // si ens arriben coordenades, actualitzem pos i heading
+      const pos = { lat: parseFloat(lat), lng: parseFloat(lon) };
+      marcador.setPosition(pos);
+      if (primerCop) {
+        mapa.setCenter(pos);
+        primerCop = false;
+      }
+    } else if (!posActual) {
+      // si encara no tenim posició, no podem fer res
+      return;
+    }
+
+    // Sempre actualitzem l'icona (inclos si només arriba heading)
+    marcador.setIcon({
+      path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+      scale: 5,
+      fillColor: "#00ffcc",
+      fillOpacity: 0.9,
+      strokeWeight: 2,
+      rotation: heading || 0
+    });
+  }
+
+  function parseThrottledState(str) {
+    const hex = typeof str === "string"
+      ? parseInt(str.split('=')[1], 16)
+      : parseInt(str);
+    return {
+      under_voltage_now: (hex & (1 << 0)) !== 0,
+      frequency_capped_now: (hex & (1 << 1)) !== 0,
+      throttling_now: (hex & (1 << 2)) !== 0,
+      under_voltage_occurred: (hex & (1 << 16)) !== 0,
+      frequency_capped_occurred: (hex & (1 << 17)) !== 0,
+      throttling_occurred: (hex & (1 << 18)) !== 0,
+    };
+  }
+
+  // WebSocket de telemetria
+  const telemetriaSocket = new WebSocket("wss://" + location.host + "/ws/telemetria/clients/" + robot_id);
+  telemetriaSocket.onmessage = event => {
+    const data = JSON.parse(event.data);
+    if (data.robot_id === robot_id) {
+      telemetria.textContent = JSON.stringify(data, null, 2);
+
+      const heading = data.heading || 0;
+      const lat = data.lat || null;
+      const lon = data.lon || null;
+
+      if (lat && lon) {
+        haRebutPosicioRobocat = true;
+      }
+
+      setMarker(lat, lon, heading);
+
+      if (data.dist !== undefined) {
+        updateDistance(data.dist);
+      }
+
+      if (data.cpu_temp !== undefined && data.gyro_temp !== undefined) {
+        const now = new Date().toLocaleTimeString();
+        graficaTemps.data.labels.push(now);
+        graficaTemps.data.datasets[0].data.push(data.cpu_temp);
+        graficaTemps.data.datasets[1].data.push(data.gyro_temp);
+
+        if (graficaTemps.data.labels.length > 20) {
+          graficaTemps.data.labels.shift();
+          graficaTemps.data.datasets[0].data.shift();
+          graficaTemps.data.datasets[1].data.shift();
+        }
+
+        graficaTemps.update();
+      }
+
+
+      if (data.cpu_use !== undefined && data.ram_use?.percent !== undefined) {
+        const now = new Date().toLocaleTimeString();
+        grafica.data.labels.push(now);
+        grafica.data.datasets[0].data.push(data.cpu_use);
+        grafica.data.datasets[1].data.push(data.ram_use.percent);
+
+        if (grafica.data.labels.length > 20) {
+          grafica.data.labels.shift();
+          grafica.data.datasets[0].data.shift();
+          grafica.data.datasets[1].data.shift();
+        }
+
+        grafica.update();
+      }
+
+
+      if (data.throttled_state) {
+        const errors = data.throttled_state;
+        errorList.innerHTML = "";
+
+        const traduccions = {
+          "under_voltage_now": "⚡ Baix voltatge ara",
+          "frequency_capped_now": "🐢 CPU limitada (freq. baixa) ara",
+          "throttling_now": "🔥 Sestà alentint pel calor",
+          "under_voltage_occurred": "⚡ Hi ha hagut baix voltatge",
+          "frequency_capped_occurred": "🐢 La CPU ha estat limitada per calor",
+          "throttling_occurred": "🔥 Sha reduït rendiment per escalfament"
+        };
+
+        let capError = true;
+        for (const [clau, actiu] of Object.entries(errors)) {
+          if (actiu) {
+            const item = document.createElement("li");
+            item.classList.add("list-group-item", "list-group-item-danger");
+            item.textContent = traduccions[clau] || clau;
+            errorList.appendChild(item);
+            capError = false;
+          }
+        }
+
+        if (capError) {
+          const item = document.createElement("li");
+          item.classList.add("list-group-item", "list-group-item-success");
+          item.textContent = "✅ Cap problema detectat";
+          errorList.appendChild(item);
+        }
+      }
+
+    }
+  };
+
+
+  function updateDistance(dist) {
+    label.textContent = `Distància: ${parseFloat(dist).toFixed(1)} cm`;
+    if (dist < 20) {
+      waves.forEach(w => w.style.animationDuration = "0.8s");
+      waves.forEach(w => w.style.borderColor = "#ff3333");
+      centerDot.style.backgroundColor = "#ff3333";
+      centerDot.classList.add("pulse");
+      label.classList.add("alert");
+    } else if (dist < 40) {
+      waves.forEach(w => w.style.animationDuration = "1.3s");
+      waves.forEach(w => w.style.borderColor = "#ffa500");
+      centerDot.style.backgroundColor = "#ffa500";
+      centerDot.classList.remove("pulse");
+      label.classList.remove("alert");
+    } else {
+      waves.forEach(w => w.style.animationDuration = "2s");
+      waves.forEach(w => w.style.borderColor = "#00ffcc");
+      centerDot.style.backgroundColor = "#00ffcc";
+      centerDot.classList.remove("pulse");
+      label.classList.remove("alert");
+    }
+  }
+
+  function enviar(moviment) {
+    fetch(`/comanda/${robot_id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ moviment })
+    });
+  }
+
+  // init grafica
+  const ctx = document.getElementById("grafica-sistema").getContext("2d");
+  const grafica = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        { label: "CPU (%)", borderColor: "#ff6384", data: [], fill: false },
+        { label: "RAM (%)", borderColor: "#36a2eb", data: [], fill: false }
+      ]
+    },
+    options: {
+      animation: false,
+      scales: {
+        x: { title: { display: true, text: "Temps" } },
+        y: {
+          title: { display: true, text: "Ús (%)" },
+          min: 0,
+          max: 100
+        }
+      }
+    }
+  });
+
+  const ctxTemp = document.getElementById("grafica-temps").getContext("2d");
+  const graficaTemps = new Chart(ctxTemp, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        { label: "Temp CPU (°C)", borderColor: "#ff0000", data: [], fill: false },
+        { label: "Temp IMU (°C)", borderColor: "#ffa500", data: [], fill: false }
+      ]
+    },
+    options: {
+      animation: false,
+      scales: {
+        x: { title: { display: true, text: "Temps" } },
+        y: {
+          title: { display: true, text: "Temperatura (°C)" },
+          suggestedMin: 30,
+          suggestedMax: 90
+        }
+      }
+    }
+  });
+
+</script>
+
+<!-- Carrega Google Maps al FINAL -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initMap"></script>
+
+{% endblock %}

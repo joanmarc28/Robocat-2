@@ -1,0 +1,165 @@
+<style>
+#assistant-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #51cbce;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  color: white;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#assistant-chat {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 250px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  padding: 10px;
+  display: none;
+  z-index: 9999;
+}
+
+.chat-bubble {
+  margin: 5px 0;
+  padding: 8px 12px;
+  border-radius: 15px;
+  max-width: 80%;
+}
+
+.user-bubble {
+  background-color: #e1f5fe;
+  align-self: flex-end;
+}
+
+.assistant-bubble {
+  background-color: #51cbce;
+  color: white;
+  align-self: flex-start;
+}
+
+#listening-animation {
+  display: none;
+  text-align: center;
+}
+</style>
+
+<button id="assistant-button" onclick="startRecording()">🎙</button>
+
+<div id="assistant-chat">
+  <div id="chat-messages" style="display: flex; flex-direction: column;"></div>
+  <div id="listening-animation">
+    <span>🎧 Escoltant...</span>
+  </div>
+</div>
+
+<script>
+let mediaRecorder;
+let audioChunks = [];
+let isRecording = false;
+
+async function startRecording() {
+  if (isRecording) return;
+
+  isRecording = true;
+  document.getElementById('assistant-chat').style.display = 'block';
+  document.getElementById('listening-animation').style.display = 'block';
+
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.start();
+    audioChunks = [];
+
+    mediaRecorder.addEventListener("dataavailable", event => {
+      audioChunks.push(event.data);
+    });
+
+    mediaRecorder.addEventListener("stop", async () => {
+      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const formData = new FormData();
+      formData.append('audio', audioBlob);
+
+      try {
+        const res = await fetch('/transcripcio', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        addChatBubble(data.transcripcio, 'user');
+
+        // envia al backend (Gemini)
+        const geminiRes = await fetch('/assistente-gemini', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pregunta: data.transcripcio })
+        });
+        const geminiData = await geminiRes.json();
+
+        // reprodueix l’àudio
+        if (geminiData.audio) {
+          const audio = new Audio("data:audio/mpeg;base64," + geminiData.audio);
+          audio.play();
+        }
+
+        // comprova si és un enllaç
+        if (geminiData.resposta.startsWith('/')) {
+          addChatBubble(`🔗 Seràs redireccionat a: ${geminiData.resposta}`, 'assistant');
+
+          const link = document.createElement('a');
+          link.href = geminiData.resposta;
+          link.innerText = `Fes clic aquí per anar a ${geminiData.resposta}`;
+          link.style.color = 'white';
+          link.style.textDecoration = 'underline';
+
+          const chat = document.getElementById('chat-messages');
+          const bubble = document.createElement('div');
+          bubble.classList.add('chat-bubble', 'assistant-bubble');
+          bubble.appendChild(link);
+          chat.appendChild(bubble);
+          chat.scrollTop = chat.scrollHeight;
+
+          // redirigeix automàticament després de 3 segons
+          setTimeout(() => {
+            window.location.href = geminiData.resposta;
+          }, 3000);
+        } else {
+          addChatBubble(geminiData.resposta, 'assistant');
+        }
+
+      } catch (err) {
+        console.error(err);
+        addChatBubble("Error processant la consulta", 'assistant');
+      } finally {
+        document.getElementById('listening-animation').style.display = 'none';
+        isRecording = false;
+      }
+    });
+
+    setTimeout(() => mediaRecorder.stop(), 4000); // 4 segons
+  }).catch(error => {
+    console.error("No s’ha pogut accedir al micròfon:", error);
+    alert("No s’ha pogut accedir al micròfon.");
+    isRecording = false;
+    document.getElementById('listening-animation').style.display = 'none';
+  });
+}
+
+function addChatBubble(text, type) {
+  const chat = document.getElementById('chat-messages');
+  const bubble = document.createElement('div');
+  bubble.classList.add('chat-bubble', type === 'user' ? 'user-bubble' : 'assistant-bubble');
+  bubble.innerText = text;
+  chat.appendChild(bubble);
+  chat.scrollTop = chat.scrollHeight;
+}
+</script>

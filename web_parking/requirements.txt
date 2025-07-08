@@ -1,0 +1,15 @@
+python-multipart
+passlib
+fastapi
+uvicorn
+jinja2
+python-dotenv
+requests
+google-cloud-vision
+sqlalchemy
+psycopg2-binary
+alembic
+datetime
+google-cloud-speech
+google-generativeai
+aiortc

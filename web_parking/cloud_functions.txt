@@ -1,0 +1,59 @@
+NOTA: Per provar l'aplicació, accedeixi al següent enllaç: https://robocat.jmprojects.cat/
+----------------------------------------------------------------------------------------------
+
+Funcions i mòduls per a la gestió d’usuaris, robots, zones i estades amb FastAPI i SQLAlchemy
+
+1. Models de dades (app/models.py)
+-----------------------------------
+- Defineix les taules i relacions SQLAlchemy per:
+  - Robot: id, nom, identificador, ip, estat ("online" o "offline"), última connexió.
+  - Usuari: id, email, data_naixement, ciutat, país, password, relacions amb Client i Policia.
+  - Client: dni, user_id (Usuari), nom, cognoms, direcció, codi postal, telèfon, relacions amb Cotxe, Targeta, Estada.
+  - Policia: user_id (Usuari), placa.
+  - Cotxe: matrícula, marca, model, color, any matriculació, imatge, dgt, combustible, relació amb Client i Estada.
+  - Targeta i ClientTargeta: targetes dels clients.
+  - Zona: id, tipus, ciutat, carrer, preu_min, temps_màxim, coordenades (JSON).
+  - Estada: id, dni_usuari, matrícula_cotxe, id_zona, data_inici, data_final, durada, preu, activa.
+- Taula N-N possessio entre Client i Cotxe.
+
+2. Funció per actualitzar estades i estat dels robots (app/cron/actualitzar_estades.py)
+--------------------------------------------------------------------------------------
+- Recupera estades actives i desactiva les que ja han acabat (data_final passada).
+- Marca com a "offline" els robots que fa més de 2 minuts que no es connecten.
+- Usa datetime.utcnow() i timedelta.
+- Fa commit i tanca la sessió.
+
+3. Gestió de sessions amb cookies (app/session.py)
+--------------------------------------------------
+- Utilitza itsdangerous.URLSafeSerializer per crear cookies segures amb user_id.
+- Funcions:
+  - create_session_cookie(user_id): genera cookie serialitzada.
+  - get_user_from_cookie(request): extreu user_id de la cookie "session" o retorna None.
+  - clear_session_cookie(response): elimina la cookie "session".
+- Carrega la clau secreta des d’una variable d’entorn (SECRET_KEY).
+
+4. API REST per a zones i estades (app/api.py)
+----------------------------------------------
+- Rutes principals:
+  - POST /guardar-zona: desa una nova zona, validant que les coordenades són JSON correcte.
+  - GET /obtenir-zones: retorna totes les zones o filtrades per ciutat.
+  - POST /eliminar_zona: elimina la zona segons l’id passat en JSON.
+  - POST /guardar-estada: registra una nova estada amb les dades rebudes per formulari.
+- Usa FastAPI, sessions SQLAlchemy i plantilles Jinja2 si cal.
+- Validacions bàsiques i control d’errors amb HTTPException.
+
+Resum de funcions exportables per Cloud:
+-----------------------------------------------
+- actualizar_estades(): per actualitzar estades i robots, a executar periòdicament.
+- API REST:
+  - guardar_zona()
+  - obtenir_zones()
+  - eliminar_zona()
+  - guardar_estada()
+
+- Gestió de sessions:
+  - create_session_cookie()
+  - get_user_from_cookie()
+  - clear_session_cookie()
+
+Els mòduls estan preparats per a desplegar-los en un entorn FastAPI compatible, amb una base de dades SQL.

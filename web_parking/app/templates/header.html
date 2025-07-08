@@ -1,0 +1,83 @@
+<!-- Navbar -->
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg"
+  style="background-color: transparent; min-height: 70px; box-shadow: none !important;">
+  <div class="container">
+    <div class="row align-items-center w-100">
+
+      <!-- LOGO -->
+      <div class="col-3 d-flex align-items-center">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+          <img src="/static/img/logo.png" alt="logo" style="height: 35px; width: auto; object-fit: contain;">
+        </a>
+      </div>
+
+      <!-- TÍTOL CENTRAT -->
+      <div class="col-6 text-center">
+        <span class="navbar-text font-weight-bold h5 mb-0 fw-bold text-white">Robocat CarPay</span>
+      </div>
+
+      <!-- BOTÓ MENÚ -->
+      <div class="col-3 d-flex justify-content-end align-items-center">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation"
+          aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-bar bar1"></span>
+          <span class="navbar-toggler-bar bar2"></span>
+          <span class="navbar-toggler-bar bar3"></span>
+        </button>
+      </div>
+
+    </div>
+    <div class="collapse navbar-collapse justify-content-end" id="navigation" style="padding-left: 0px;">
+      <ul class="navbar-nav">
+        {% if user_id %}
+          {% if role == "policia" %}
+            <div class="p-2">
+              <a href="/zones" class="col-12 btn btn-neutral btn-round">Zones</a>
+            </div>
+            <div class="p-2">
+              <a href="/robots" class="col-12 btn btn-neutral btn-round">Robots</a>
+            </div>
+            <div class="p-2">
+              <a href="/routing" class="col-12 btn btn-neutral btn-round">Planificador</a>
+            </div>
+            <div class="p-2">
+              <a href="/deteccio" class="col-12 btn btn-neutral btn-round">Anàlisis</a>
+            </div>
+            <div class="p-2">
+              <a href="/infraccions" class="col-12 btn btn-neutral btn-round">Infraccions</a>
+            </div>
+
+            {% else %}
+            <div class="p-2">
+              <a href="/parking" class="col-12 btn btn-neutral btn-round">Registrar Aparcament</a>
+            </div>
+            <div class="p-2">
+              <a href="/historial" class="col-12 btn btn-neutral btn-round">Historial</a>
+            </div>
+            <div class="p-2">
+              <a href="/cars" class="col-12 btn btn-neutral btn-round">Els Meus Cotxes</a>
+            </div>
+            <div class="p-2">
+              <a href="/infraccions" class="col-12 btn btn-neutral btn-round">Infraccions</a>
+            </div>
+            <div class="p-2">
+              <a href="/perfil" class="col-12 btn btn-neutral btn-round">Perfil</a>
+            </div>
+            {% endif %}
+            <div class="p-2">
+              <a href="/logout" class="col-12 btn btn-neutral btn-round">Sortir</a>
+            </div>
+        {% else %}
+
+        <!--<li class="p-2">
+            <a href="/registre" class="col-12 btn btn-neutral btn-round">Registre</a>
+          </li>
+          <li class="p-2">
+            <a href="/login" class="col-12 btn btn-neutral btn-round">Login</a>
+          </li>-->
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>

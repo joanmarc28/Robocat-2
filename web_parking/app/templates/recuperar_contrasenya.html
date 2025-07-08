@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Recuperar Contrasenya{% endblock %}
+
+{% block content %}
+<div class="section" style="z-index: 2; position: relative; padding-top: 0px !important;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card" data-color="white">
+                    <div class="card-body">
+                        <form method="POST" action="/recuperar_contrasenya">
+                            <div class="form-group">
+                                <div class="col-12 btn-disabled btn-neutral btn-round2">Recuperar Contrasenya</div>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" class="form-control input-class" name="email" placeholder="Introdueix el teu email" required>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-neutral btn-round btn-block">Enviar correu de recuperació</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

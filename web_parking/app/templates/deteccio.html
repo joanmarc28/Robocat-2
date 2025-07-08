@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Camera i deteccio en directe{% endblock %}
+
+{% block content %}
+<div class="section" style="z-index: 2; position: relative;padding-top: 0px !important;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="card" data-color="white">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="col-12 btn-disabled titols">📷 Càmera i detecció en directe</div>
+                        </div>
+                        <div>
+                            <video autoplay playsinline id="webcam" width="640" height="480"></video>
+
+                            <div class="mt-3 d-flex justify-content-between">
+                                <button id="mode-emocions" class="btn btn-outline-primary btn-sm active">Mode emocions</button>
+                                <button id="mode-policia" class="btn btn-outline-danger btn-sm">Mode policia</button>
+                            </div>
+
+                            <div id="loader" style="display: none;" class="text-center mt-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <!--<span class="visually-hidden">Carregant...</span>-->
+                                </div>
+                                <p class="mt-2">Analitzant...</p>
+                            </div>
+
+                            <div id="resultat" class="mt-3">
+                                <h2>Resultats:</h2>
+
+                                <div id="bloc-policia" style="display: none;">
+                                    <p><strong>Matrícules:</strong> <span id="matricules">Carregant...</span></p>
+                                    <p><strong>Infracció:</strong> <span id="infraccio">Cap</span></p>
+                                </div>
+
+                                <div id="bloc-emocions">
+                                    <p><strong>Emocions:</strong> <span id="emocions">Carregant...</span></p>
+                                    <p><strong>Resum emocional:</strong> <span id="analisi">Cap</span></p>
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <a href="/welcome" class="col-12 btn btn-neutral btn-round">Tornar al menú principal</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let mode = "emocions"; // Mode inicial per defecte
+
+    const btnEmocions = document.getElementById("mode-emocions");
+    const btnPolicia = document.getElementById("mode-policia");
+
+    btnEmocions.addEventListener("click", () => {
+        mode = "emocions";
+        btnEmocions.classList.add("active");
+        btnPolicia.classList.remove("active");
+
+        document.getElementById("bloc-emocions").style.display = "block";
+        document.getElementById("bloc-policia").style.display = "none";
+    });
+
+    btnPolicia.addEventListener("click", () => {
+        mode = "policia";
+        btnPolicia.classList.add("active");
+        btnEmocions.classList.remove("active");
+
+        document.getElementById("bloc-policia").style.display = "block";
+        document.getElementById("bloc-emocions").style.display = "none";
+    });
+
+    const video = document.getElementById('webcam');
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => { video.srcObject = stream; })
+        .catch(err => { alert("No s'ha pogut accedir a la càmera: " + err); });
+
+    setInterval(enviarFrame, 10000);
+
+    function mostrarLoader() {
+        document.getElementById("loader").style.display = "block";
+    }
+
+    function amagarLoader() {
+        document.getElementById("loader").style.display = "none";
+    }
+
+    async function enviarFrame() {
+        if (video.readyState < 2) return;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const dataURL = canvas.toDataURL('image/jpeg');
+
+        mostrarLoader();
+
+        try {
+            const res = await fetch('/api/deteccio-frame', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imatge: dataURL, mode: mode })
+            });
+
+            if (!res.ok) throw new Error('Resposta HTTP no vàlida');
+
+            const data = await res.json();
+
+            if (mode === 'policia') {
+                document.getElementById('matricules').textContent = data.matricules?.join(', ') || 'Cap';
+                document.getElementById('infraccio').textContent = data.infraccio || 'Cap';
+            } else {
+                document.getElementById('emocions').textContent = data.emocions?.join(', ') || 'Cap';
+                document.getElementById('analisi').textContent = data.analisi || 'Cap';
+            }
+        } catch (error) {
+            console.error('Error enviant frame:', error);
+        } finally {
+            amagarLoader();
+        }
+    }
+</script>
+{% endblock %}
